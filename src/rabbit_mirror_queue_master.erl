@@ -24,7 +24,7 @@
          dropwhile/2, fetchwhile/4, set_ram_duration_target/2, ram_duration/1,
          needs_timeout/1, timeout/1, handle_pre_hibernate/1, resume/1,
          msg_rates/1, info/2, invoke/3, is_duplicate/2, set_queue_mode/2,
-         zip_msgs_and_acks/4]).
+         zip_msgs_and_acks/4, handled_bump_reduce_memory_use/1]).
 
 -export([start/1, stop/0, delete_crashed/1]).
 
@@ -512,6 +512,11 @@ zip_msgs_and_acks(Msgs, AckTags, Accumulator,
                   #state { backing_queue = BQ,
                            backing_queue_state = BQS }) ->
     BQ:zip_msgs_and_acks(Msgs, AckTags, Accumulator, BQS).
+
+handled_bump_reduce_memory_use(State = #state{ backing_queue       = BQ,
+                                               backing_queue_state = BQS0 }) ->
+    BQS1 = BQ:handled_bump_reduce_memory_use(BQS0),
+    State#state{ backing_queue_state = BQS1 }.
 
 %% ---------------------------------------------------------------------------
 %% Other exported functions

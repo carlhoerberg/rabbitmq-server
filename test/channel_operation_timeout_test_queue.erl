@@ -26,7 +26,8 @@
          set_ram_duration_target/2, ram_duration/1, needs_timeout/1, timeout/1,
          handle_pre_hibernate/1, resume/1, msg_rates/1,
          info/2, invoke/3, is_duplicate/2, set_queue_mode/2,
-         zip_msgs_and_acks/4,  multiple_routing_keys/0]).
+         zip_msgs_and_acks/4, multiple_routing_keys/0,
+         handled_bump_reduce_memory_use/1]).
 
 -export([start/1, stop/0]).
 
@@ -709,6 +710,9 @@ zip_msgs_and_acks(Msgs, AckTags, Accumulator, _State) ->
     lists:foldl(fun ({{#basic_message{ id = Id }, _Props}, AckTag}, Acc) ->
                         [{Id, AckTag} | Acc]
                 end, Accumulator, lists:zip(Msgs, AckTags)).
+
+handled_bump_reduce_memory_use(State) ->
+    State.
 
 convert_to_lazy(State) ->
     State1 = #vqstate { delta = Delta, q3 = Q3, len = Len } =

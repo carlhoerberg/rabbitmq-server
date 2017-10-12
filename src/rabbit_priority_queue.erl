@@ -41,7 +41,7 @@
          set_ram_duration_target/2, ram_duration/1, needs_timeout/1, timeout/1,
          handle_pre_hibernate/1, resume/1, msg_rates/1,
          info/2, invoke/3, is_duplicate/2, set_queue_mode/2,
-         zip_msgs_and_acks/4]).
+         zip_msgs_and_acks/4, handled_bump_reduce_memory_use/1]).
 
 -record(state, {bq, bqss, max_priority}).
 -record(passthrough, {bq, bqs}).
@@ -446,6 +446,9 @@ zip_msgs_and_acks(Msgs, AckTags, Accumulator, #state{bqss = [{MaxP, _} |_]}) ->
 zip_msgs_and_acks(Msgs, AckTags, Accumulator,
                   #passthrough{bq = BQ, bqs = BQS}) ->
     BQ:zip_msgs_and_acks(Msgs, AckTags, Accumulator, BQS).
+
+handled_bump_reduce_memory_use(State = #passthrough{ bq = BQ, bqs = BQS }) ->
+    ?passthrough1(handled_bump_reduce_memory_use(BQS)).
 
 %%----------------------------------------------------------------------------
 
