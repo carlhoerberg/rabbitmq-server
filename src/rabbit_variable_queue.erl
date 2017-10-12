@@ -313,7 +313,7 @@
           %% reaches a threshold the queue will manually trigger a runtime GC
 	        %% see: maybe_execute_gc/1
           memory_reduction_run_count,
-          waiting_bump
+          waiting_bump = false
         }).
 
 -record(rates, { in, out, ack_in, ack_out, timestamp }).
@@ -2463,10 +2463,10 @@ maybe_bump_reduce_memory_use(State = #vqstate{ waiting_bump = true }) ->
     State;
 maybe_bump_reduce_memory_use(State) ->
     self() ! bump_reduce_memory_use,
-    State#vqstate{ waiting_bump = waiting }.
-
-handled_bump_reduce_memory_use(State = #vqstate{ waiting_bump = waiting }) ->
     State#vqstate{ waiting_bump = true }.
+
+handled_bump_reduce_memory_use(State = #vqstate{ waiting_bump = true }) ->
+    State#vqstate{ waiting_bump = false }.
 
 limit_ram_acks(0, State) ->
     {0, ui(State)};
