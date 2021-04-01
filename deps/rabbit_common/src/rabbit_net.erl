@@ -83,6 +83,14 @@
     andalso (tuple_size(Sock) =:= 3)
     andalso (element(1, Sock) =:= sslsocket)).
 
+is_ssl({rabbit_proxy_socket, _, ProxyInfo}) ->
+    #{
+      ssl := ProxySSL
+     } = ProxyInfo,
+    #{
+      client := ProxyClientSSL
+     } = ProxySSL,
+    ProxyClientSSL =:= ssl;
 is_ssl(Sock) -> ?IS_SSL(Sock).
 
 %% Seems hackish. Is hackish. But the structure is stable and
