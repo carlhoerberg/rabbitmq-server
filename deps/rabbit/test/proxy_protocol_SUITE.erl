@@ -22,7 +22,8 @@ all() ->
 groups() -> [
         {sequential_tests, [], [
             proxy_protocol,
-            proxy_protocol_tls
+            proxy_protocol_tls,
+            proxy_protocol_v2
         ]}
     ].
 
@@ -80,6 +81,20 @@ proxy_protocol_tls(Config) ->
     ConnectionName = rabbit_ct_broker_helpers:rpc(Config, 0,
         ?MODULE, connection_name, []),
     match = re:run(ConnectionName, <<"^192.168.1.1:80 -> 192.168.1.2:81$">>, [{capture, none}]),
+    gen_tcp:close(Socket),
+    ok.
+
+proxy_protocol_v2(Config) ->
+    Port = rabbit_ct_broker_helpers:get_node_config(Config, 0, tcp_port_amqp),
+    {ok, Socket} = gen_tcp:connect({127,0,0,1}, Port,
+        [binary, {active, false}, {packet, raw}]),
+    ok = inet:send(Socket, <<13,10,13,10,0,13,10,81,85,73,84,10,33,17,0,78,158,174,6,195,10,56,72,85,132,200,22,39,32,0,63,1,0,0,0,0,33,0,7,84,76,83,118,49,46,51,37,0,7,82,83,65,50,48,52,56,36,0,10,82,83,65,45,83,72,65,50,53,54,35,0,22,84,76,83,95,65,69,83,95,50,53,54,95,71,67,77,95,83,72,65,51,56,52>>),
+    ok = inet:send(Socket, <<"AMQP", 0, 0, 9, 1>>),
+    {ok, _Packet} = gen_tcp:recv(Socket, 0, ?TIMEOUT),
+    ConnectionName = rabbit_ct_broker_helpers:rpc(Config, 0,
+        ?MODULE, connection_name, []),
+    match = re:run(ConnectionName, <<"^158.174.6.195:33992 -> 10.56.72.85:5671$">>, [{capture, none}]),
+    % TODO: check if SSL connection
     gen_tcp:close(Socket),
     ok.
 
